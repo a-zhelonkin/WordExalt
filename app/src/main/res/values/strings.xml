@@ -3,4 +3,5 @@
     <string name="description">Word by word helper</string>
     <string translatable="false" name="searchLabel">🔎</string>
     <string translatable="false" name="nextLabel">➡</string>
+    <string name="defaultWord">🗿</string>
 </resources>

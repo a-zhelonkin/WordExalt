@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
@@ -11,7 +12,10 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.futurteam.wordexalt.components.WordsOverlayView;
 import com.futurteam.wordexalt.logic.planners.TreePlanner;
@@ -32,6 +36,9 @@ public class GlobalActionBarService extends AccessibilityService {
 
         LayoutInflater inflater = LayoutInflater.from(this);
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        Display.Mode mode = windowManager.getDefaultDisplay().getMode();
+        int screenWidth = mode.getPhysicalWidth();
+        int screenHeight = mode.getPhysicalHeight();
 
         WindowManager.LayoutParams topLayoutParams = new WindowManager.LayoutParams();
         topLayoutParams.alpha = 0.5f;
@@ -47,6 +54,7 @@ public class GlobalActionBarService extends AccessibilityService {
         Button searchButton = topRoot.findViewById(R.id.search);
         TextView wordTextView = topRoot.findViewById(R.id.word);
         Button nextButton = topRoot.findViewById(R.id.next);
+        SeekBar overlaySlider = topRoot.findViewById(R.id.overlayGap);
 
         WindowManager.LayoutParams overlayLayoutParams = new WindowManager.LayoutParams();
         overlayLayoutParams.alpha = 0.5f;
@@ -58,7 +66,7 @@ public class GlobalActionBarService extends AccessibilityService {
         FrameLayout overlayRoot = new FrameLayout(this);
         inflater.inflate(R.layout.layout_overlay, overlayRoot);
         windowManager.addView(overlayRoot, overlayLayoutParams);
-        WordsOverlayView overlayView = topRoot.findViewById(R.id.overlay);
+        WordsOverlayView overlayView = overlayRoot.findViewById(R.id.overlay);
 
         searchButton.setOnClickListener(view -> {
             CharSequence lettersText = null;
@@ -102,6 +110,24 @@ public class GlobalActionBarService extends AccessibilityService {
                 return;
 
             wordTextView.setText(words.pop());
+        });
+
+        overlaySlider.setMax(Math.abs(screenHeight - screenWidth));
+        overlaySlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) overlayView.getLayoutParams();
+                layoutParams.topMargin = progress;
+                overlayView.setLayoutParams(layoutParams);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
     }
 
