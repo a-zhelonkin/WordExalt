@@ -1,9 +1,14 @@
-package com.futurteam.wordexalt.logic;
+package com.futurteam.wordexalt.logic.planners;
+
+import androidx.annotation.NonNull;
+
+import com.futurteam.wordexalt.logic.Delta;
+import com.futurteam.wordexalt.logic.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Planner {
+public final class TreePlanner implements Planner {
 
     private static final Delta[] Directions = new Delta[]{
             new Delta(+1, +1), new Delta(0, +1), new Delta(-1, +1),
@@ -16,7 +21,7 @@ public final class Planner {
     private final byte _height;
     private final Node[] _roots;
 
-    public static Planner fromLine(String line) {
+    public static TreePlanner fromLine(String line) {
         char[][] map = new char[5][5];
         map[0][0] = line.charAt(0);
         map[0][1] = line.charAt(1);
@@ -43,17 +48,17 @@ public final class Planner {
         map[4][2] = line.charAt(22);
         map[4][3] = line.charAt(23);
         map[4][4] = line.charAt(24);
-        return new Planner(map);
+        return new TreePlanner(map);
     }
 
-    public Planner(char[][] map) {
+    public TreePlanner(char[][] map) {
         _map = map;
         _width = (byte) map[0].length;
         _height = (byte) map.length;
         _roots = new Node[_width * _height];
     }
 
-    public void Prepare() {
+    public void prepare() {
         for (byte y = 0; y < _height; y++) {
             for (byte x = 0; x < _width; x++) {
                 Node item = new Node();
@@ -99,7 +104,7 @@ public final class Planner {
         return list;
     }
 
-    public boolean Check(String word) {
+    public boolean Check(@NonNull final String word) {
         for (Node root : _roots) {
             if (Check(root, word, 0))
                 return true;
@@ -108,7 +113,7 @@ public final class Planner {
         return false;
     }
 
-    private static boolean Check(Node node, String word, int index) {
+    private static boolean Check(@NonNull final Node node, @NonNull final String word, int index) {
         char letter = word.charAt(index);
         if (node.Letter != letter)
             return false;

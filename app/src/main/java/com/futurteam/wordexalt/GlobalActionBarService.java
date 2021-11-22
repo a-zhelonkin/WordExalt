@@ -13,7 +13,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.futurteam.wordexalt.logic.Planner;
+import com.futurteam.wordexalt.components.WordsOverlayView;
+import com.futurteam.wordexalt.logic.planners.TreePlanner;
 
 import java.util.Locale;
 import java.util.Stack;
@@ -23,29 +24,41 @@ public class GlobalActionBarService extends AccessibilityService {
     private static final String TAG = GlobalActionBarService.class.getName();
 
     private final Stack<String> words = new Stack<>();
-    private Planner planner = null;
+    private TreePlanner planner = null;
 
     @Override
     protected void onServiceConnected() {
         Log.d(TAG, "onServiceConnected");
 
-        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        FrameLayout mLayout = new FrameLayout(this);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
-        lp.format = PixelFormat.TRANSLUCENT;
-        lp.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        lp.gravity = Gravity.TOP;
         LayoutInflater inflater = LayoutInflater.from(this);
-        inflater.inflate(R.layout.action_bar, mLayout);
-        wm.addView(mLayout, lp);
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
+        WindowManager.LayoutParams topLayoutParams = new WindowManager.LayoutParams();
+        topLayoutParams.alpha = 0.5f;
+        topLayoutParams.format = PixelFormat.TRANSLUCENT;
+        topLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+        topLayoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        topLayoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
+        topLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        topLayoutParams.gravity = Gravity.TOP;
+        FrameLayout topRoot = new FrameLayout(this);
+        inflater.inflate(R.layout.layout_top, topRoot);
+        windowManager.addView(topRoot, topLayoutParams);
+        Button searchButton = topRoot.findViewById(R.id.search);
+        TextView wordTextView = topRoot.findViewById(R.id.word);
+        Button nextButton = topRoot.findViewById(R.id.next);
 
-        Button searchButton = mLayout.findViewById(R.id.search);
-        TextView wordTextView = mLayout.findViewById(R.id.word);
-        Button nextButton = mLayout.findViewById(R.id.next);
+        WindowManager.LayoutParams overlayLayoutParams = new WindowManager.LayoutParams();
+        overlayLayoutParams.alpha = 0.5f;
+        overlayLayoutParams.format = PixelFormat.TRANSLUCENT;
+        overlayLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+        overlayLayoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
+        overlayLayoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
+        overlayLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+        FrameLayout overlayRoot = new FrameLayout(this);
+        inflater.inflate(R.layout.layout_overlay, overlayRoot);
+        windowManager.addView(overlayRoot, overlayLayoutParams);
+        WordsOverlayView overlayView = topRoot.findViewById(R.id.overlay);
 
         searchButton.setOnClickListener(view -> {
             CharSequence lettersText = null;
@@ -68,8 +81,8 @@ public class GlobalActionBarService extends AccessibilityService {
                 return;
             }
 
-            planner = Planner.fromLine(lettersText.toString().toLowerCase(Locale.ROOT));
-            planner.Prepare();
+            planner = TreePlanner.fromLine(lettersText.toString().toLowerCase(Locale.ROOT));
+            planner.prepare();
 
             Resources res = getResources();
             String[] lib = res.getStringArray(R.array.words);

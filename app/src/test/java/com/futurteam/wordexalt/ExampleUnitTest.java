@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.futurteam.wordexalt.logic.Planner;
+import com.futurteam.wordexalt.logic.planners.TreePlanner;
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -14,13 +14,13 @@ import com.futurteam.wordexalt.logic.Planner;
 public class ExampleUnitTest {
     @Test
     public void check2x2_isCorrect() {
-        Planner planner = new Planner(new char[][]
+        TreePlanner planner = new TreePlanner(new char[][]
         {
             {'с', 'т'},
             {'р', 'о'},
         });
 
-        planner.Prepare();
+        planner.prepare();
 
         assertTrue(planner.Check("рост"));
         assertTrue(planner.Check("сорт"));
@@ -32,14 +32,14 @@ public class ExampleUnitTest {
     }
     @Test
     public void check3x3_isCorrect() {
-        Planner planner = new Planner(new char[][]
+        TreePlanner planner = new TreePlanner(new char[][]
         {
             {'с', 'т', 'к'},
             {'р', 'о', 'н'},
             {'в', 'у', 'а'},
         });
 
-        planner.Prepare();
+        planner.prepare();
 
         assertTrue(planner.Check("урон"));
         assertTrue(planner.Check("врун"));

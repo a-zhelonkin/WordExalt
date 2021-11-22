@@ -9,7 +9,7 @@ public final class Node {
     public Node Parent;
     public List<Node> Childs;
 
-    public boolean Exists(byte x, byte y) {
+    public boolean Exists(final byte x, final byte y) {
         return X == x && Y == y || (Parent != null && Parent.Exists(x, y));
     }
 }
