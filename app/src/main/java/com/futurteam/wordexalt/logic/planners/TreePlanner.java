@@ -2,18 +2,18 @@ package com.futurteam.wordexalt.logic.planners;
 
 import androidx.annotation.NonNull;
 
-import com.futurteam.wordexalt.logic.Delta;
 import com.futurteam.wordexalt.logic.Node;
+import com.futurteam.wordexalt.logic.Point;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class TreePlanner implements Planner {
 
-    private static final Delta[] Directions = new Delta[]{
-            new Delta(+1, +1), new Delta(0, +1), new Delta(-1, +1),
-            new Delta(+1, +0), /*                   */ new Delta(-1, +0),
-            new Delta(+1, -1), new Delta(0, -1), new Delta(-1, -1),
+    private static final Point[] Directions = new Point[]{
+            new Point(+1, +1), new Point(0, +1), new Point(-1, +1),
+            new Point(+1, +0), /*                   */ new Point(-1, +0),
+            new Point(+1, -1), new Point(0, -1), new Point(-1, -1),
     };
 
     private final char[][] _map;
@@ -61,12 +61,8 @@ public final class TreePlanner implements Planner {
     public void prepare() {
         for (byte y = 0; y < _height; y++) {
             for (byte x = 0; x < _width; x++) {
-                Node item = new Node();
-                item.X = x;
-                item.Y = y;
-                item.Letter = _map[y][x];
-                item.Parent = null;
-                item.Childs = DeepIn(x, y, item, 0);
+                Node item = new Node(null, x, y, _map[y][x]);
+                item.childs = DeepIn(x, y, item, 0);
 
                 _roots[y * _width + x] = item;
             }
@@ -78,7 +74,7 @@ public final class TreePlanner implements Planner {
             return null;
 
         List<Node> list = new ArrayList<>(7);
-        for (Delta delta : Directions) {
+        for (Point delta : Directions) {
             byte newX = (byte) (x + delta.x);
             if (newX < 0 || _width <= newX)
                 continue;
@@ -90,13 +86,8 @@ public final class TreePlanner implements Planner {
             if (parent.Exists(newX, newY))
                 continue;
 
-            Node node = new Node();
-            node.X = newX;
-            node.Y = newY;
-            node.Letter = _map[newY][newX];
-            node.Parent = parent;
-
-            node.Childs = DeepIn(newX, newY, node, level + 1);
+            Node node = new Node(parent, newX, newY, _map[newY][newX]);
+            node.childs = DeepIn(newX, newY, node, level + 1);
 
             list.add(node);
         }
@@ -104,32 +95,38 @@ public final class TreePlanner implements Planner {
         return list;
     }
 
-    public boolean Check(@NonNull final String word) {
+    public Node Check(@NonNull final String word) {
         for (Node root : _roots) {
-            if (Check(root, word, 0))
-                return true;
+            Node checked = Check(root, word, 0);
+            if (checked == null)
+                continue;
+
+            return checked;
         }
 
-        return false;
+        return null;
     }
 
-    private static boolean Check(@NonNull final Node node, @NonNull final String word, int index) {
+    private static Node Check(@NonNull final Node node, @NonNull final String word, int index) {
         char letter = word.charAt(index);
-        if (node.Letter != letter)
-            return false;
+        if (node.letter != letter)
+            return null;
 
         index++;
         if (word.length() == index)
-            return true;
+            return node;
 
-        if (node.Childs == null || node.Childs.isEmpty())
-            return false;
+        if (node.childs == null || node.childs.isEmpty())
+            return null;
 
-        for (Node child : node.Childs) {
-            if (Check(child, word, index))
-                return true;
+        for (Node child : node.childs) {
+            Node checked = Check(child, word, index);
+            if (checked == null)
+                continue;
+
+            return checked;
         }
 
-        return false;
+        return null;
     }
 }
