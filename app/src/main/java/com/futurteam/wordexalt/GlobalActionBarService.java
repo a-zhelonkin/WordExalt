@@ -37,6 +37,7 @@ public class GlobalActionBarService extends AccessibilityService {
 
     private static final String TAG = GlobalActionBarService.class.getName();
 
+    private TextView wordTextView;
     private WordsOverlayView overlayView;
 
     private final Stack<Pair<String, Node>> words = new Stack<>();
@@ -65,7 +66,7 @@ public class GlobalActionBarService extends AccessibilityService {
         inflater.inflate(R.layout.layout_top, topRoot);
         windowManager.addView(topRoot, topLayoutParams);
         Button searchButton = topRoot.findViewById(R.id.search);
-        TextView wordTextView = topRoot.findViewById(R.id.word);
+        wordTextView = topRoot.findViewById(R.id.word);
         Button nextButton = topRoot.findViewById(R.id.next);
         SeekBar overlaySlider = topRoot.findViewById(R.id.overlayGap);
 
@@ -124,15 +125,7 @@ public class GlobalActionBarService extends AccessibilityService {
             overlayView.setNode(pop.second);
         });
 
-        nextButton.setOnClickListener(view -> {
-            if (words.isEmpty())
-                return;
-
-            Pair<String, Node> pop = words.pop();
-            wordTextView.setText(pop.first);
-            overlayView.setNode(pop.second);
-//            Swipe(pop.second);
-        });
+        nextButton.setOnClickListener(view -> swipeAll());
 
         overlaySlider.setMax(Math.abs(screenHeight - screenWidth));
         overlaySlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -161,40 +154,66 @@ public class GlobalActionBarService extends AccessibilityService {
     public void onInterrupt() {
     }
 
-    private void Swipe(@NonNull final Node node) {
-        List<Node> items = new ArrayList<>();
-        Node current = node;
-        while (current != null) {
-            items.add(current);
-            current = current.parent;
+    private void swipeAll() {
+        if (words.size() > 0) {
+            final Pair<String, Node> pop = words.pop();
+            wordTextView.setText(pop.first);
+            overlayView.setNode(pop.second);
+            swipe(pop.second, this::swipeAll);
         }
+    }
 
-        Collections.reverse(items);
+    private void swipe(@NonNull final Node node, @NonNull final Runnable onEnd) {
+        final int yFix = ((ConstraintLayout.LayoutParams) overlayView.getLayoutParams()).topMargin;
+        final List<Point> route = new ArrayList<>();
 
-        ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) overlayView.getLayoutParams();
-        Path swipePath = new Path();
-        Node first = items.get(0);
-        Point begin = CheckersUtils.get(first.x, first.y);
-        swipePath.moveTo(begin.x, begin.y + layoutParams.topMargin);
-        for (int i = 1; i < items.size(); i++) {
-            Node item = items.get(i);
-            Point next = CheckersUtils.get(item.x, item.y);
-            swipePath.lineTo(next.x, next.y + layoutParams.topMargin);
-        }
-
-        GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-        gestureBuilder.addStroke(new GestureDescription.StrokeDescription(swipePath, 0, 200L * items.size()));
-        dispatchGesture(gestureBuilder.build(), new GestureResultCallback() {
+        final GestureResultCallback gestureResultCallback = new GestureResultCallback() {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-
-                if (words.size() > 0) {
-                    Pair<String, Node> pop = words.pop();
-                    overlayView.setNode(pop.second);
-                    Swipe(pop.second);
-                }
+                onEnd.run();
             }
-        }, null);
+        };
+
+        Node currentNode = node;
+        while (currentNode != null) {
+            final Point point = CheckersUtils.get(currentNode.x, currentNode.y);
+            route.add(point);
+            currentNode = currentNode.parent;
+        }
+
+        Collections.reverse(route);
+
+        Point previousPoint = route.get(0);
+        Point currentPoint = route.get(1);
+
+        final Path path = new Path();
+        path.moveTo(previousPoint.x, previousPoint.y + yFix);
+        path.lineTo(currentPoint.x, currentPoint.y + yFix);
+
+        boolean willContinue = route.size() > 2;
+        GestureDescription.Builder builder = new GestureDescription.Builder();
+        GestureDescription.StrokeDescription stroke = new GestureDescription.StrokeDescription(path, 0, 50L, willContinue);
+        builder.addStroke(stroke);
+        dispatchGesture(builder.build(), willContinue ? null : gestureResultCallback, null);
+
+        final int routeSize = route.size();
+        final int lastIndex = routeSize - 1;
+        for (int index = 1; index < lastIndex; index++) {
+            final int nextIndex = index + 1;
+
+            previousPoint = route.get(index);
+            currentPoint = route.get(nextIndex);
+
+            path.rewind();
+            path.moveTo(previousPoint.x, previousPoint.y + yFix);
+            path.lineTo(currentPoint.x, currentPoint.y + yFix);
+
+            willContinue = nextIndex < lastIndex;
+            builder = new GestureDescription.Builder();
+            stroke = stroke.continueStroke(path, 0, 50L, willContinue);
+            builder.addStroke(stroke);
+            dispatchGesture(builder.build(), willContinue ? null : gestureResultCallback, null);
+        }
     }
 }

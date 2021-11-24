@@ -19,6 +19,7 @@
         <item>дм</item>
         <item>до</item>
         <item>ее</item>
+        <item>ер</item>
         <item>еж</item>
         <item>же</item>
         <item>за</item>
@@ -45,12 +46,14 @@
         <item>ой</item>
         <item>ом</item>
         <item>он</item>
+        <item>ор</item>
         <item>от</item>
         <item>ох</item>
         <item>па</item>
         <item>пи</item>
         <item>по</item>
         <item>ре</item>
+        <item>ро</item>
         <item>со</item>
         <item>су</item>
         <item>та</item>
@@ -72,9 +75,11 @@
         <item>як</item>
         <item>ял</item>
         <item>яр</item>
+        <item>аак</item>
         <item>абу</item>
         <item>ага</item>
         <item>аир</item>
+        <item>аил</item>
         <item>акр</item>
         <item>акт</item>
         <item>ант</item>
@@ -127,6 +132,7 @@
         <item>вне</item>
         <item>воз</item>
         <item>вой</item>
+        <item>вок</item>
         <item>вол</item>
         <item>вон</item>
         <item>вор</item>
@@ -227,6 +233,7 @@
         <item>кол</item>
         <item>ком</item>
         <item>кон</item>
+        <item>коб</item>
         <item>кот</item>
         <item>кош</item>
         <item>кто</item>
@@ -772,10 +779,12 @@
         <item>гуще</item>
         <item>гюйс</item>
         <item>гяур</item>
+        <item>даба</item>
         <item>дабы</item>
         <item>даже</item>
         <item>даль</item>
         <item>дама</item>
+        <item>данк</item>
         <item>дань</item>
         <item>дата</item>
         <item>дать</item>
@@ -2483,6 +2492,8 @@
         <item>выкуп</item>
         <item>вылет</item>
         <item>вылов</item>
+        <item>вылом</item>
+        <item>вымол</item>
         <item>вынос</item>
         <item>выпад</item>
         <item>выпас</item>
@@ -2978,6 +2989,7 @@
         <item>ишиас</item>
         <item>йодид</item>
         <item>йомен</item>
+        <item>кааба</item>
         <item>кабак</item>
         <item>кабан</item>
         <item>кабул</item>
@@ -3501,6 +3513,7 @@
         <item>много</item>
         <item>могар</item>
         <item>могол</item>
+        <item>модал</item>
         <item>модем</item>
         <item>модно</item>
         <item>модус</item>
@@ -4596,6 +4609,7 @@
         <item>столб</item>
         <item>столп</item>
         <item>столь</item>
+        <item>стома</item>
         <item>стопа</item>
         <item>стояк</item>
         <item>страж</item>
@@ -14873,6 +14887,7 @@
         <item>отавный</item>
         <item>отарный</item>
         <item>отарщик</item>
+        <item>отбавка</item>
         <item>отбивка</item>
         <item>отбитый</item>
         <item>отблеск</item>
@@ -15387,6 +15402,7 @@
         <item>поделка</item>
         <item>поденка</item>
         <item>поденно</item>
+        <item>подеста</item>
         <item>поджаро</item>
         <item>поджать</item>
         <item>поджечь</item>
@@ -19454,6 +19470,7 @@
         <item>вездеход</item>
         <item>везикула</item>
         <item>везувиан</item>
+        <item>вековать</item>
         <item>велевший</item>
         <item>веленный</item>
         <item>величаво</item>
@@ -20848,6 +20865,7 @@
         <item>допивать</item>
         <item>допивший</item>
         <item>допилить</item>
+        <item>допинать</item>
         <item>дописать</item>
         <item>доплести</item>
         <item>доплесть</item>
@@ -25240,6 +25258,7 @@
         <item>отчалить</item>
         <item>отчаяние</item>
         <item>отчаянно</item>
+        <item>отчесать</item>
         <item>отчество</item>
         <item>отчетный</item>
         <item>отчистка</item>
@@ -26210,6 +26229,7 @@
         <item>попереть</item>
         <item>попивать</item>
         <item>попивший</item>
+        <item>попинать</item>
         <item>попирать</item>
         <item>пописать</item>
         <item>поплавок</item>

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">WordExalt</string>
     <string name="description">Word by word helper</string>
-    <string translatable="false" name="searchLabel">🔎</string>
-    <string translatable="false" name="nextLabel">➡</string>
-    <string name="defaultWord">🗿</string>
+    <string name="searchLabel" translatable="false">🔎</string>
+    <string name="nextLabel" translatable="false">➡</string>
+    <string name="defaultWord" translatable="false">🗿</string>
 </resources>
