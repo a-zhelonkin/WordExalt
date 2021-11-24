@@ -25,8 +25,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.futurteam.wordexalt.components.WordsOverlayView;
 import com.futurteam.wordexalt.logic.Node;
 import com.futurteam.wordexalt.logic.Point;
+import com.futurteam.wordexalt.logic.planners.GraphPlanner;
 import com.futurteam.wordexalt.logic.planners.Planner;
-import com.futurteam.wordexalt.logic.planners.TreePlanner;
 import com.futurteam.wordexalt.utils.CheckersUtils;
 
 import java.util.ArrayList;
@@ -142,7 +142,7 @@ public class GlobalActionBarService extends AccessibilityService {
         }
 
         final String line = lettersText.toString().toLowerCase(Locale.ROOT);
-        final Planner planner = new TreePlanner(line);
+        final Planner planner = new GraphPlanner(line);
         planner.prepare();
 
         final Resources res = getResources();

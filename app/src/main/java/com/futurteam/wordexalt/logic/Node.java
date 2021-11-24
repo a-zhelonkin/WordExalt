@@ -1,5 +1,6 @@
 package com.futurteam.wordexalt.logic;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
@@ -20,7 +21,16 @@ public final class Node {
         this.letter = letter;
     }
 
-    public boolean Exists(final byte x, final byte y) {
-        return this.x == x && this.y == y || (parent != null && parent.Exists(x, y));
+    public boolean ExistsRoute(final byte x, final byte y) {
+        return this.x == x && this.y == y || (parent != null && parent.ExistsRoute(x, y));
+    }
+
+    public boolean ExistsChild(final byte x, final byte y) {
+        for (@NonNull final Node child : childs) {
+            if (child.x == x && child.y == y)
+                return true;
+        }
+
+        return false;
     }
 }
