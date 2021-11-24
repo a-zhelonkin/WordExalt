@@ -85,15 +85,15 @@ public final class GraphPlanner extends BasePlanner {
         if (cursor.letter != letter)
             return null;
 
-        index++;
-        if (index == word.length()) {
-            return new Node(route, cursor.x, cursor.y, letter);
-        }
-
         if (route != null && route.ExistsRoute(cursor.x, cursor.y))
             return null;
 
         @NonNull final Node nextRoute = new Node(route, cursor.x, cursor.y, letter);
+
+        index++;
+        if (index == word.length()) {
+            return nextRoute;
+        }
 
         for (@NonNull final Node child : cursor.childs) {
             @Nullable final Node checked = check(child, nextRoute, word, index);
