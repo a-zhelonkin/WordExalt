@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="words">
+        <item>погорать</item>
+        <item>апоастр</item>
+        <item>отварка</item>
+        <item>злиться</item>
+        <item>карите</item>
+        <item>кардон</item>
+        <item>отеска</item>
+        <item>прируб</item>
+        <item>ратрак</item>
+        <item>литься</item>
+        <item>нода</item>
+        <item>грат</item>
+        <item>вант</item>
+        <item>кар</item>
+        <item>чик</item>
+        <item>кич</item>
+        <item>кан</item>
+        <item>огр</item>
+        <item>тат</item>
+        <item>анк</item>
+        <item>саз</item>
+        <item>гал</item>
+        <item>ват</item>
+
         <item>ад</item>
         <item>аж</item>
         <item>аз</item>
@@ -601,6 +625,7 @@
         <item>блин</item>
         <item>блиц</item>
         <item>блок</item>
+        <item>блот</item>
         <item>блуд</item>
         <item>блюз</item>
         <item>блюм</item>

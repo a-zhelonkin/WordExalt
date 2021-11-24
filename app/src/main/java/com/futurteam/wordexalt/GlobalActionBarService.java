@@ -19,11 +19,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.futurteam.wordexalt.components.WordsOverlayView;
 import com.futurteam.wordexalt.logic.Node;
 import com.futurteam.wordexalt.logic.Point;
+import com.futurteam.wordexalt.logic.planners.Planner;
 import com.futurteam.wordexalt.logic.planners.TreePlanner;
 import com.futurteam.wordexalt.utils.CheckersUtils;
 
@@ -40,21 +42,18 @@ public class GlobalActionBarService extends AccessibilityService {
     private TextView wordTextView;
     private WordsOverlayView overlayView;
 
-    private final Stack<Pair<String, Node>> words = new Stack<>();
-    private TreePlanner planner = null;
-
     @Override
     protected void onServiceConnected() {
         Log.d(TAG, "onServiceConnected");
 
-        LayoutInflater inflater = LayoutInflater.from(this);
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        Display.Mode mode = windowManager.getDefaultDisplay().getMode();
-        int screenWidth = mode.getPhysicalWidth();
-        int screenHeight = mode.getPhysicalHeight();
+        final LayoutInflater inflater = LayoutInflater.from(this);
+        final WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        final Display.Mode mode = windowManager.getDefaultDisplay().getMode();
+        final int screenWidth = mode.getPhysicalWidth();
+        final int screenHeight = mode.getPhysicalHeight();
         CheckersUtils.init(screenWidth);
 
-        WindowManager.LayoutParams topLayoutParams = new WindowManager.LayoutParams();
+        final WindowManager.LayoutParams topLayoutParams = new WindowManager.LayoutParams();
         topLayoutParams.alpha = 0.75f;
         topLayoutParams.format = PixelFormat.TRANSLUCENT;
         topLayoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -62,7 +61,7 @@ public class GlobalActionBarService extends AccessibilityService {
         topLayoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
         topLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         topLayoutParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-        FrameLayout topRoot = new FrameLayout(this);
+        final FrameLayout topRoot = new FrameLayout(this);
         inflater.inflate(R.layout.layout_top, topRoot);
         windowManager.addView(topRoot, topLayoutParams);
         Button searchButton = topRoot.findViewById(R.id.search);
@@ -70,62 +69,28 @@ public class GlobalActionBarService extends AccessibilityService {
         Button nextButton = topRoot.findViewById(R.id.next);
         SeekBar overlaySlider = topRoot.findViewById(R.id.overlayGap);
 
-        WindowManager.LayoutParams overlayLayoutParams = new WindowManager.LayoutParams();
+        final WindowManager.LayoutParams overlayLayoutParams = new WindowManager.LayoutParams();
         overlayLayoutParams.alpha = 0.5f;
         overlayLayoutParams.format = PixelFormat.TRANSLUCENT;
         overlayLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         overlayLayoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
         overlayLayoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
         overlayLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
-        FrameLayout overlayRoot = new FrameLayout(this);
+        final FrameLayout overlayRoot = new FrameLayout(this);
         inflater.inflate(R.layout.layout_overlay, overlayRoot);
         windowManager.addView(overlayRoot, overlayLayoutParams);
         overlayView = overlayRoot.findViewById(R.id.overlay);
 
         searchButton.setOnClickListener(view -> {
-            CharSequence lettersText = null;
-            AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
-            int childCount = rootInActiveWindow.getChildCount();
-            for (int childIndex = 0; childIndex < childCount; childIndex++) {
-                AccessibilityNodeInfo child = rootInActiveWindow.getChild(childIndex);
-                CharSequence childText = child.getText();
-                if (childText == null)
-                    continue;
+            final List<Point> initRoute = CheckersUtils.initRoute();
+            swipe(initRoute, () -> {
+                final Stack<Pair<String, Node>> words = extractWords();
+                if (words == null)
+                    return;
 
-                Log.d(TAG, "Child text: " + childText);
-                if (childText.length() == 25) {
-                    lettersText = childText;
-                }
-            }
-
-            if (lettersText == null) {
-                wordTextView.setText("❌");
-                return;
-            }
-
-            words.clear();
-            String line = lettersText.toString().toLowerCase(Locale.ROOT);
-            planner = TreePlanner.fromLine(line);
-            planner.prepare();
-
-            Resources res = getResources();
-            String[] lib = res.getStringArray(R.array.words);
-
-            for (String word : lib) {
-                Node checked = planner.Check(word);
-                if (checked == null)
-                    continue;
-
-                words.add(new Pair<>(word, checked));
-            }
-
-            Log.d(TAG, "Found words: " + words.size());
-            Pair<String, Node> pop = words.pop();
-            wordTextView.setText(pop.first);
-            overlayView.setNode(pop.second);
+                swipe(words);
+            }, null);
         });
-
-        nextButton.setOnClickListener(view -> swipeAll());
 
         overlaySlider.setMax(Math.abs(screenHeight - screenWidth));
         overlaySlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -154,26 +119,60 @@ public class GlobalActionBarService extends AccessibilityService {
     public void onInterrupt() {
     }
 
-    private void swipeAll() {
+    @Nullable
+    private Stack<Pair<String, Node>> extractWords() {
+        CharSequence lettersText = null;
+        final AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
+        final int childCount = rootInActiveWindow.getChildCount();
+        for (int childIndex = 0; childIndex < childCount; childIndex++) {
+            final AccessibilityNodeInfo child = rootInActiveWindow.getChild(childIndex);
+            final CharSequence childText = child.getText();
+            if (childText == null)
+                continue;
+
+            Log.d(TAG, "Child text: " + childText);
+            if (childText.length() == 25) {
+                lettersText = childText;
+            }
+        }
+
+        if (lettersText == null) {
+            wordTextView.setText("❌");
+            return null;
+        }
+
+        final String line = lettersText.toString().toLowerCase(Locale.ROOT);
+        final Planner planner = new TreePlanner(line);
+        planner.prepare();
+
+        final Resources res = getResources();
+        final String[] lib = res.getStringArray(R.array.words);
+
+        final Stack<Pair<String, Node>> words = new Stack<>();
+        for (final String word : lib) {
+            final Node checked = planner.check(word);
+            if (checked == null)
+                continue;
+
+            words.add(new Pair<>(word, checked));
+        }
+
+        return words;
+    }
+
+    private void swipe(@NonNull final Stack<Pair<String, Node>> words) {
         if (words.size() > 0) {
             final Pair<String, Node> pop = words.pop();
             wordTextView.setText(pop.first);
             overlayView.setNode(pop.second);
-            swipe(pop.second, this::swipeAll);
+            swipe(pop.second, () -> swipe(words), words::clear);
         }
     }
 
-    private void swipe(@NonNull final Node node, @NonNull final Runnable onEnd) {
-        final int yFix = ((ConstraintLayout.LayoutParams) overlayView.getLayoutParams()).topMargin;
+    private void swipe(@NonNull final Node node,
+                       @Nullable final Runnable onCompleted,
+                       @Nullable final Runnable onCancelled) {
         final List<Point> route = new ArrayList<>();
-
-        final GestureResultCallback gestureResultCallback = new GestureResultCallback() {
-            @Override
-            public void onCompleted(GestureDescription gestureDescription) {
-                super.onCompleted(gestureDescription);
-                onEnd.run();
-            }
-        };
 
         Node currentNode = node;
         while (currentNode != null) {
@@ -183,6 +182,32 @@ public class GlobalActionBarService extends AccessibilityService {
         }
 
         Collections.reverse(route);
+        swipe(route, onCompleted, onCancelled);
+    }
+
+    private void swipe(@NonNull final List<Point> route,
+                       @Nullable final Runnable onCompleted,
+                       @Nullable final Runnable onCancelled) {
+        final int yFix = ((ConstraintLayout.LayoutParams) overlayView.getLayoutParams()).topMargin;
+        final GestureResultCallback gestureResultCallback = new GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+                if (onCompleted == null)
+                    return;
+
+                onCompleted.run();
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+                if (onCancelled == null)
+                    return;
+
+                onCancelled.run();
+            }
+        };
 
         Point previousPoint = route.get(0);
         Point currentPoint = route.get(1);
@@ -193,7 +218,7 @@ public class GlobalActionBarService extends AccessibilityService {
 
         boolean willContinue = route.size() > 2;
         GestureDescription.Builder builder = new GestureDescription.Builder();
-        GestureDescription.StrokeDescription stroke = new GestureDescription.StrokeDescription(path, 0, 50L, willContinue);
+        GestureDescription.StrokeDescription stroke = new GestureDescription.StrokeDescription(path, 5, 75L, willContinue);
         builder.addStroke(stroke);
         dispatchGesture(builder.build(), willContinue ? null : gestureResultCallback, null);
 
@@ -211,7 +236,7 @@ public class GlobalActionBarService extends AccessibilityService {
 
             willContinue = nextIndex < lastIndex;
             builder = new GestureDescription.Builder();
-            stroke = stroke.continueStroke(path, 0, 50L, willContinue);
+            stroke = stroke.continueStroke(path, 5, 75L, willContinue);
             builder.addStroke(stroke);
             dispatchGesture(builder.build(), willContinue ? null : gestureResultCallback, null);
         }

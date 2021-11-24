@@ -10,6 +10,6 @@ public interface Planner {
     void prepare();
 
     @Nullable
-    Node Check(@NonNull final String word);
+    Node check(@NonNull final String word);
 
 }

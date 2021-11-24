@@ -22,13 +22,13 @@ public class ExampleUnitTest {
 
         planner.prepare();
 
-        assertNotNull(planner.Check("рост"));
-        assertNotNull(planner.Check("сорт"));
-        assertNotNull(planner.Check("тор"));
-        assertNotNull(planner.Check("рот"));
-        assertNotNull(planner.Check("орт"));
-        assertNotNull(planner.Check("ор"));
-        assertNotNull(planner.Check("ро"));
+        assertNotNull(planner.check("рост"));
+        assertNotNull(planner.check("сорт"));
+        assertNotNull(planner.check("тор"));
+        assertNotNull(planner.check("рот"));
+        assertNotNull(planner.check("орт"));
+        assertNotNull(planner.check("ор"));
+        assertNotNull(planner.check("ро"));
     }
     @Test
     public void check3x3_isCorrect() {
@@ -41,17 +41,17 @@ public class ExampleUnitTest {
 
         planner.prepare();
 
-        assertNotNull(planner.Check("урон"));
-        assertNotNull(planner.Check("врун"));
-        assertNotNull(planner.Check("руна"));
-        assertNotNull(planner.Check("сток"));
-        assertNotNull(planner.Check("рост"));
-        assertNotNull(planner.Check("сорт"));
-        assertNotNull(planner.Check("тон"));
-        assertNotNull(planner.Check("тор"));
-        assertNotNull(planner.Check("рот"));
-        assertNotNull(planner.Check("орт"));
-        assertNotNull(planner.Check("ор"));
-        assertNotNull(planner.Check("ро"));
+        assertNotNull(planner.check("урон"));
+        assertNotNull(planner.check("врун"));
+        assertNotNull(planner.check("руна"));
+        assertNotNull(planner.check("сток"));
+        assertNotNull(planner.check("рост"));
+        assertNotNull(planner.check("сорт"));
+        assertNotNull(planner.check("тон"));
+        assertNotNull(planner.check("тор"));
+        assertNotNull(planner.check("рот"));
+        assertNotNull(planner.check("орт"));
+        assertNotNull(planner.check("ор"));
+        assertNotNull(planner.check("ро"));
     }
 }
