@@ -2,7 +2,6 @@ package com.futurteam.wordexalt;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
-import android.content.res.Resources;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.util.Log;
@@ -25,8 +24,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.futurteam.wordexalt.components.WordsOverlayView;
 import com.futurteam.wordexalt.logic.Node;
 import com.futurteam.wordexalt.logic.Point;
-import com.futurteam.wordexalt.logic.planners.GraphPlanner;
-import com.futurteam.wordexalt.logic.planners.Planner;
+import com.futurteam.wordexalt.logic.cheater.Defendant;
 import com.futurteam.wordexalt.utils.CheckersUtils;
 
 import java.util.ArrayList;
@@ -52,6 +50,7 @@ public class GlobalActionBarService extends AccessibilityService {
         final int screenWidth = mode.getPhysicalWidth();
         final int screenHeight = mode.getPhysicalHeight();
         CheckersUtils.init(screenWidth);
+        Defendant.init(getResources());
 
         final WindowManager.LayoutParams topLayoutParams = new WindowManager.LayoutParams();
         topLayoutParams.alpha = 0.75f;
@@ -142,20 +141,27 @@ public class GlobalActionBarService extends AccessibilityService {
         }
 
         final String line = lettersText.toString().toLowerCase(Locale.ROOT);
-        final Planner planner = new GraphPlanner(line);
-        planner.prepare();
+        final String adoptedLine = line.substring(0, 5)
+                + new StringBuilder(line.substring(5, 10)).reverse().toString()
+                + line.substring(10, 15)
+                + new StringBuilder(line.substring(15, 20)).reverse().toString()
+                + line.substring(20, 25);
 
-        final Resources res = getResources();
-        final String[] lib = res.getStringArray(R.array.words);
-
-        final Stack<Pair<String, Node>> words = new Stack<>();
-        for (final String word : lib) {
-            final Node checked = planner.check(word);
-            if (checked == null)
-                continue;
-
-            words.add(new Pair<>(word, checked));
-        }
+        final Stack<Pair<String, Node>> words = Defendant.resolve(adoptedLine);
+//        final Planner planner = new GraphPlanner(line);
+//        planner.prepare();
+//
+//        final Resources res = getResources();
+//        final String[] lib = res.getStringArray(R.array.words);
+//
+//        final Stack<Pair<String, Node>> words = new Stack<>();
+//        for (final String word : lib) {
+//            final Node checked = planner.check(word);
+//            if (checked == null)
+//                continue;
+//
+//            words.add(new Pair<>(word, checked));
+//        }
 
         return words;
     }
