@@ -32,10 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
-public class GlobalActionBarService extends AccessibilityService {
+public class MainService extends AccessibilityService {
 
-    private static final String TAG = GlobalActionBarService.class.getName();
+    private static final String TAG = MainService.class.getName();
 
     private TextView wordTextView;
     private WordsOverlayView overlayView;
@@ -80,22 +81,55 @@ public class GlobalActionBarService extends AccessibilityService {
         windowManager.addView(overlayRoot, overlayLayoutParams);
         overlayView = overlayRoot.findViewById(R.id.overlay);
 
-        searchButton.setOnClickListener(view -> {
-            final List<Point> initRoute = CheckersUtils.initRoute();
-            swipe(initRoute, () -> {
-                final Stack<Pair<String, Node>> words = extractWords();
-                if (words == null)
-                    return;
+//        searchButton.setOnClickListener(view -> {
+//            final List<Point> initRoute = CheckersUtils.initRoute();
+//            swipe(initRoute, () -> {
+//                final Stack<Pair<String, Node>> words = extractWords();
+//                if (words == null)
+//                    return;
+//
+//                swipe(words);
+//            }, null);
+//        });
 
-                swipe(words);
-            }, null);
+        searchButton.setOnClickListener(searchView -> {
+            final Stack<Pair<String, Node>> words = extractWords();
+            if (words == null)
+                return;
+
+            final Stack<Pair<String, Node>> sortedWords = words.stream()
+                    .sorted((x1, x2) -> {
+                        final String firstWord = x1.first;
+                        final String secondWord = x2.first;
+
+                        if (firstWord.length() > secondWord.length()) {
+                            return 1;
+                        }
+
+                        if (firstWord.length() < secondWord.length()) {
+                            return -1;
+                        }
+
+                        return firstWord.compareTo(secondWord);
+                    })
+                    .collect(Collectors.toCollection(Stack::new));
+
+            final Pair<String, Node> firstPop = sortedWords.pop();
+            wordTextView.setText(firstPop.first);
+            overlayView.setNode(firstPop.second);
+
+            nextButton.setOnClickListener(nextView -> {
+                final Pair<String, Node> currentPop = sortedWords.pop();
+                wordTextView.setText(currentPop.first);
+                overlayView.setNode(currentPop.second);
+            });
         });
 
         overlaySlider.setMax(Math.abs(screenHeight - screenWidth));
         overlaySlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) overlayView.getLayoutParams();
+                final ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) overlayView.getLayoutParams();
                 layoutParams.topMargin = progress;
                 overlayView.setLayoutParams(layoutParams);
             }
